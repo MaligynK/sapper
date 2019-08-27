@@ -1,6 +1,7 @@
 import {Stage} from './stage.class';
 import {GameStage} from './game_stage.class';
 import {GraphicHelper} from './graphic_helper.class';
+import {ResourcesKeeper, Resources} from './resources_keeper';
 
 import * as PIXI from 'pixi.js';
 
@@ -28,6 +29,7 @@ export class ViewApp {
   private _canvas_height = 600;
   // модальное окно
   private _modal: Modal;
+  private _resources: Resources;
 
   constructor(elem: HTMLElement) {
     // инициализация Pixi
@@ -37,7 +39,7 @@ export class ViewApp {
       backgroundColor: 0xFFFFFF
     });
     // вставка холста в контейнер
-    elem.appendChild(this._app.view);
+    elem.appendChild(this._app.view as HTMLElement);
     // не открывать контекстное меню в игре
     elem.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -48,28 +50,27 @@ export class ViewApp {
    * Загрузка используемых изображений
    * **/
   private _load_resources(): Promise<any> {
-    return new Promise(
-      (resolve, reject) => {
-        this._app.loader
-          .add('start', '/assets/images/buttons/start.png')
-          .add('menu', '/assets/images/buttons/menu.png')
-          .add('close', '/assets/images/buttons/close.png')
-          .add('pause', '/assets/images/buttons/pause.png')
-          .add('back', '/assets/images/buttons/back.png')
-          .load((loader, resources) => {
-            // создание модального окна
-            this._create_modal();
-            resolve();
-          })
+    return ResourcesKeeper.load_resources().then(
+      (resources) => {
+        this._resources = resources;
       }
     );
-  }
-
-  /**
-   * Упрощенный доступ к ресурсам (загруженным изображениям)
-   * **/
-  private get _resources(): any {
-    return this._app.loader.resources;
+    // return new Promise(
+    //   (resolve, reject) => {
+    //     const options = {crossOrigin: true};
+    //     this._app.loader
+    //       .add('start', 'assets/images/buttons/start.png', options)
+    //       .add('menu', 'assets/images/buttons/menu.png', options)
+    //       .add('close', 'assets/images/buttons/close.png', options)
+    //       .add('pause', 'assets/images/buttons/pause.png', options)
+    //       .add('back', 'assets/images/buttons/back.png', options)
+    //       .load((loader, resources) => {
+    //         // создание модального окна
+    //         this._create_modal();
+    //         resolve();
+    //       });
+    //   }
+    // );
   }
 
   /**
@@ -81,6 +82,8 @@ export class ViewApp {
                        pause: () => void): Promise<Stages> {
     return this._load_resources().then(
       () => {
+        // создание модального окна
+        this._create_modal();
         return {
           menu: this._create_main_menu(start_game),
           pause: this._create_pause_menu(back_to_game, back_to_menu),
@@ -113,10 +116,11 @@ export class ViewApp {
     // не отображаем
     container.visible = false;
     // кнопка закрытия окна
-    const texture = this._resources.close.texture;
+    const texture = this._resources.close;
+    // const texture = this._resources.close.texture;
     const button = GraphicHelper.create_button(texture);
-    button.x = (container.width - texture.orig.width) / 2;
-    button.y = (container.height - texture.orig.height) * 4 / 5;
+    button.x = (container.width - texture.width) / 2;
+    button.y = (container.height - texture.height) * 4 / 5;
     container.addChild(button);
     // текст сообщения
     const text = GraphicHelper.create_text('', {
@@ -158,7 +162,7 @@ export class ViewApp {
   /**
    * Отобразить сообщение в модальном окне
    * **/
-  public show_message(text: string, callback?:() => void) {
+  public show_message(text: string, callback?: () => void) {
     // zIndex не работает как должен, переммещаем модальное окно наверх
     this._app.stage.children.sort((itemA, itemB) => itemA.zIndex - itemB.zIndex);
     // меняем текст сообщения
@@ -182,7 +186,7 @@ export class ViewApp {
   /**
    * Создание экрана главного меню
    * **/
-  private _create_main_menu(callback:() => void): Stage {
+  private _create_main_menu(callback: () => void): Stage {
     // кнопки в меню
     const menu_buttons = [
       {
@@ -190,7 +194,8 @@ export class ViewApp {
         x: 0.5,
         y: 0.5,
         callback: callback,
-        texture: this._resources.start.texture
+        // texture: this._resources.start.texture
+        texture: this._resources.start
       }
     ];
     return new Stage(this._app, menu_buttons);
@@ -199,7 +204,7 @@ export class ViewApp {
   /**
    * Создание экрана меню паузы
    * **/
-  private _create_pause_menu(back_to_game:() => void, back_to_menu:() => void): Stage {
+  private _create_pause_menu(back_to_game: () => void, back_to_menu: () => void): Stage {
     // кнопки в меню
     const pause_buttons = [
       {
@@ -207,14 +212,16 @@ export class ViewApp {
         x: 0.5,
         y: 1 / 3,
         callback: back_to_game,
-        texture: this._resources.back.texture
+        // texture: this._resources.back.texture
+        texture: this._resources.back
       },
       {
         name: 'menu',
         x: 0.5,
         y: 2 / 3,
         callback: back_to_menu,
-        texture: this._resources.menu.texture
+        // texture: this._resources.menu.texture
+        texture: this._resources.menu
       }
     ];
     return new Stage(this._app, pause_buttons);
@@ -223,7 +230,7 @@ export class ViewApp {
   /**
    * Создание экрана игры
    * **/
-  private _create_game_stage(callback:() => void): GameStage {
+  private _create_game_stage(callback: () => void): GameStage {
     // кнопки в меню
     const game_buttons = [
       {
@@ -231,7 +238,8 @@ export class ViewApp {
         x: 0.2,
         y: 0.07,
         callback: callback,
-        texture: this._resources.pause.texture
+        // texture: this._resources.pause.texture
+        texture: this._resources.pause
       }
     ];
     return new GameStage(this._app, game_buttons);

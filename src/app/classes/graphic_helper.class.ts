@@ -44,7 +44,7 @@ export class GraphicHelper {
    *  texture - текстура изображения из app.loader.resources PixiJS
    * **/
   static create_button(texture: any): PIXI.Sprite {
-    const button = new PIXI.Sprite(texture);
+    const button = new PIXI.Sprite(texture.texture);
     button.buttonMode = true;
     button.interactive = true;
     return button;

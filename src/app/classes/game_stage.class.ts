@@ -1,4 +1,4 @@
-import {Stage, Button} from './stage.class';
+import {Stage} from './stage.class';
 import {Field, Cell} from './field.class';
 import {GraphicHelper} from './graphic_helper.class';
 

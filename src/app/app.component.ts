@@ -36,7 +36,6 @@ export class AppComponent {
    * Инициализация: создание холста, состояний
    * **/
   ngAfterViewInit() {
-    console.log('!!!FFF', this.view_container)
     // создание холста
     this._view = new ViewApp(this.view_container.nativeElement);
     // создание стадий приложения

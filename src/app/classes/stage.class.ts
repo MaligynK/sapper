@@ -37,8 +37,8 @@ export class Stage {
       // подписываемся на нажатие
       button_elem.on('mouseup', button.callback);
       // положение относительно экрана
-      button_elem.x = app.view.width * button.x - texture.orig.width/2;
-      button_elem.y = app.view.height * button.y - texture.orig.height/2;
+      button_elem.x = app.view.width * button.x - texture.width/2;
+      button_elem.y = app.view.height * button.y - texture.height/2;
       this._container.addChild(button_elem);
     }
     this._container.visible = false;

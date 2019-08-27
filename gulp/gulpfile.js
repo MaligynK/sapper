@@ -1,6 +1,6 @@
 const gulp = require('gulp');
 const include = require('gulp-include');
-var clean = require('gulp-clean');
+const clean = require('gulp-clean');
 
 
 const clean_func = function () {
